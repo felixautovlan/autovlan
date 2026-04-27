@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto VLAN Design System</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #83f3a5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    header {
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      color: #1a202c;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      margin-top: 4px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #1a202c;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #3b82f6;
+      background: #fff;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 11px;
+      background: #1d4ed8;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button[type="submit"]:hover { background: #1e40af; }
+
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: #a0c5ea;
+      border: 1px solid #99efcf;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+
+    .stat .label {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead tr {
+      background: #a6f086;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid #abf382;
+    }
+
+    tbody tr { border-bottom: 1px solid #6baff2; transition: background 0.15s; }
+    tbody tr:hover { background: #984779; }
+    tbody td { padding: 10px 14px; color: #2c2735; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-mgmt  { background: #dbeafe; color: #42df09; }
+    .badge-voice { background: #ede9fe; color: #a40a52; }
+    .badge-data  { background: #dcfce7; color: #084a6d; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>⚙️ Auto VLAN Design System</h1>
+    <p>Enter your network parameters to generate a 3-tier topology with VLAN allocation.</p>
+  </header>
+
+  <!-- Input Form -->
+  <div class="card">
+    <h2>Network Parameters</h2>
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Number of Devices</label>
+          <input type="number" name="nodes" min="1" placeholder="e.g. 120" required>
+        </div>
+        <div class="form-group">
+          <label>VLAN Name Prefix</label>
+          <input type="text" name="prefix" placeholder="e.g. OFFICE" required>
+        </div>
+      </div>
+      <button type="submit">Generate Network →</button>
+    </form>
+  </div>
+
+  <!-- Error Message -->
+  {% if error %}
+  <div class="error-box"> {{ error }}</div>
+  {% endif %}
+
+  <!-- Results -->
+  {% if result %}
+  <div class="stats-row">
+    <div class="stat">
+      <div class="value">{{ result.switches }}</div>
+      <div class="label">Switches</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ result.vlans }}</div>
+      <div class="label">VLANs</div>
+    </div>
+    <div class="stat">
+      <div class="value">{{ result.uplinks }}</div>
+      <div class="label">Uplinks</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Network Segments</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>VLAN ID</th>
+          <th>Name</th>
+          <th>Subnet</th>
+          <th>Gateway</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in result.segments %}
+        <tr>
+          <td><strong>{{ v.vlan_id }}</strong></td>
+          <td>{{ v.name }}</td>
+          <td>{{ v.subnet }}</td>
+          <td>{{ v.gateway_ip() }}</td>
+          <td>
+            <span class="badge badge-{{ v.purpose }}">{{ v.purpose }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+</body>
+</html>
